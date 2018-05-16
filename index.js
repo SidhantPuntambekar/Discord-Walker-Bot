@@ -23,7 +23,7 @@ var walkingChannel = client.channels.get(process.env.WalkingChannelID.toString()
 //Schedules certain actions to be taken at certain times
 var now = new Date();
 setTimeout(function() {
-    https.get("http://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
+    https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
         let data = '';
         response.on('data', (chunk) => {
             data += chunk;
