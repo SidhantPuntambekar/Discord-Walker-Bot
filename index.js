@@ -2,7 +2,12 @@ const https = require('https');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-client.login(process.env.DiscordKey);
+//If environment variables aren't already available, load them from file
+if (process.env.DiscordKey == undefined) {
+    require('dotenv').load()
+}
+
+client.login(process.env.DiscordKey.toString());
 
 //The persons whomst shall walkst amongst the enemies before school
 var neighbors = {
@@ -13,12 +18,12 @@ var neighbors = {
 };
 
 //The channel in which the bot will reside
-var walkingChannel = client.channels.get(process.env.WalkingChannelID);
+var walkingChannel = client.channels.get(process.env.WalkingChannelID.toString());
 
 //Schedules certain actions to be taken at certain times
 var now = new Date();
 setTimeout(function() {
-    https.get("http://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey, (response) => {
+    https.get("http://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
         let data = '';
         response.on('data', (chunk) => {
             data += chunk;
