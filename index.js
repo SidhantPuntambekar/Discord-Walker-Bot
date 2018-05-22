@@ -56,11 +56,11 @@ client.on('ready', () => {
                             }
                         }
                         walkingChannel.send("The cool neighbors today are " + walkers.slice(0, -2).join(', ') + (walkers.slice(0, -2).length ? ', ' : '') + walkers.slice(-2).join(', and ') + ".");
-                    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), 8, 15, 0, 0)); //Above happens at 8:15 every day
+                    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), 8, 15, 0, 0) - now()); //Above happens at 8:15 every day
                 });
             });
         });
-    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), 6, 15, 0, 0)); //Above happens at 6:15 every day
+    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), 6, 15, 0, 0) - now()); //Above happens at 6:15 every day
 
 });
 
