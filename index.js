@@ -13,6 +13,26 @@ client.login(process.env.DiscordKey.toString());
 //The persons whomst shall walkst amongst the enemies before school
 var neighbors = ['Lord Strainer#0454', 'IIPerson#1723', 'Kxoe#8732', 'wussupnik#6607'];
 
+//The times at which the bot will be active
+var queryTime = { hour: 6, minute: 15 };
+var displayTime = { hour: 8, minute: 15 };
+
+/**
+ * Formats an array to an appropriate string
+ */
+function formatArrray(array) {
+    if (array.length == 0) {
+        return "";
+    }
+    if (array.length == 1) {
+        return array[0].toString();
+    }
+    if (array.length == 2) {
+        return array[0].toString() + " and " + array[1].toString();
+    }
+    return array.slice(0, -2).join(', ') + (array.slice(0, -2).length ? ', ' : '') + array.slice(-2).join(', and ');
+}
+
 /**
  * Main entry point for the program; what happens when the bot logs in
  * All bot actions need to be taken in this body
@@ -48,19 +68,19 @@ client.on('ready', () => {
                     setTimeout(function() {
                         var reactions = msg.reactions.array();
                         var walkers = [];
-                        var losers = [];
                         for (var i = 0; i < reactions.length; i++) {
                             var reaction = reactions[i];
                             if (reaction.emoji.toString() == "👍") {
                                 walkers = reaction.users.array().filter((user) => neighbors.indexOf(user.tag) > -1).map((user) => user.username);
                             }
                         }
-                        walkingChannel.send("The cool neighbors today are " + walkers.slice(0, -2).join(', ') + (walkers.slice(0, -2).length ? ', ' : '') + walkers.slice(-2).join(', and ') + ".");
-                    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), 8, 15, 0, 0) - now()); //Above happens at 8:15 every day
+                        walkingChannel.send("The cool neighbors today are " + formatArrray(walkers) + ".");
+                        //TODO: collect statistics on who is walking
+                    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now()); //Above happens at 8:15 every day
                 });
             });
         });
-    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), 6, 15, 0, 0) - now()); //Above happens at 6:15 every day
+    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), queryTime.hour, queryTime.minute, 0, 0) - now()); //Above happens at 6:15 every day
 
 });
 
