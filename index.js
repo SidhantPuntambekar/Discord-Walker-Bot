@@ -71,7 +71,9 @@ client.on("ready", () => {
                 var weatherInfo = JSON.parse(data);
                 var dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
                 //Sends a message on the walking channel with the weather data and asks for who is walking
-                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a '" + affirmationEmoji + "': other emojis or lack thereof are ignored.").then((msg) => {
+                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a " + affirmationEmoji + ": other emojis or lack thereof are ignored.").then((msg) => {
+                    //Bot reacts to its own message with the necessary emoji for ease of neighbor use
+                    msg.react(affirmationEmoji);
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
                     setTimeout(() => {
                         var reactions = msg.reactions.array();
@@ -79,7 +81,7 @@ client.on("ready", () => {
                         for (var i = 0; i < reactions.length; i++) {
                             var reaction = reactions[i];
                             if (reaction.emoji.toString() == affirmationEmoji) {
-                                walkers = reaction.users.array().filter((user) => user.tag in neighbors);
+                                walkers = reaction.users.array().filter((user) => "tag" in user && user.tag in neighbors);
                             }
                         }
                         if (walkers.length > 0) {
