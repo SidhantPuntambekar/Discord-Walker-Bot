@@ -1,17 +1,22 @@
-const https = require('https');
-const Discord = require('discord.js');
+const https = require("https");
+const Discord = require("discord.js");
 const client = new Discord.Client();
 
 //If environment variables aren't already available, load them from file
 if (process.env.DiscordKey == undefined) {
-    require('dotenv').load()
+    require("dotenv").load()
 }
 
 //Logs the bot in
 client.login(process.env.DiscordKey.toString());
 
-//A list of tags of neighbors who walk and will have data collected on them
-var neighbors = ['Lord Strainer#0454', 'IIPerson#1723', 'Kxoe#8732', 'wussupnik#6607'];
+//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them
+var neighbors = {
+    "Lord Strainer#0454": "Saurabh",
+    "IIPerson#1723": "Elia",
+    "Kxoe#8732": "Kadin",
+    "wussupnik#6607": "Nikaash"
+};
 //What emoji will be used for affirmation of walking
 var affirmationEmoji = "👍";
 
@@ -32,14 +37,14 @@ function formatArrayToString(array) {
     if (array.length == 2) {
         return array[0].toString() + " and " + array[1].toString();
     }
-    return array.slice(0, -2).join(', ') + (array.slice(0, -2).length ? ', ' : '') + array.slice(-2).join(', and ');
+    return array.slice(0, -2).join(", ") + (array.slice(0, -2).length ? ", " : "") + array.slice(-2).join(", and ");
 }
 
 /**
  * Main entry point for the program; what happens when the bot logs in
  * All bot actions need to be taken in this body
  */
-client.on('ready', () => {
+client.on("ready", () => {
 
     //Gets the channel that the bot will send messages in
     var walkingChannel = client.channels.array().filter((channel) => {
@@ -60,11 +65,11 @@ client.on('ready', () => {
         https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
             //API response gets accumulated into data
             let data = '';
-            response.on('data', (chunk) => { data += chunk; });
+            response.on("data", (chunk) => { data += chunk; });
             //After response has been fully collected, the response gets parsed and the rest of the program continues
-            response.on('end', () => {
+            response.on("end", () => {
                 var weatherInfo = JSON.parse(data);
-                var dateFormat = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                var dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
                 //Sends a message on the walking channel with the weather data and asks for who is walking
                 walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a '" + affirmationEmoji + "': other emojis or lack thereof are ignored.").then((msg) => {
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
@@ -74,11 +79,11 @@ client.on('ready', () => {
                         for (var i = 0; i < reactions.length; i++) {
                             var reaction = reactions[i];
                             if (reaction.emoji.toString() == affirmationEmoji) {
-                                walkers = reaction.users.array().filter((user) => neighbors.indexOf(user.tag) > -1).map((user) => user.username);
+                                walkers = reaction.users.array().filter((user) => user.tag in neighbors);
                             }
                         }
                         if (walkers.length > 0) {
-                            walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers) + ".");
+                            walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers.map((user) => neighbors[user.tag])) + ".");
                         } else {
                             walkingChannel.send("No one is walking today... :(");
                         }
