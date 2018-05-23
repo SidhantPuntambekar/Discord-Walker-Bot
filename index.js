@@ -2,9 +2,22 @@ const https = require("https");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
+//Whether the bot has performed its function today
+var hasFinished = false;
+
 //If environment variables aren't already available, load them from file
 if (process.env.DiscordKey == undefined) {
     require("dotenv").load()
+} else { //If environment variables are already available, then Heroku is being used; below will keep Heroku app awake
+    var herokuTimer;
+    //Timer will ping application every 15 minutes until bot has finished its execution
+    herokuTimer = setInterval(() => {
+        if (hasFinished) {
+            clearInterval(herokuTimer);
+        } else {
+            https.get("https://stormy-walker.herokuapp.com");
+        }
+    }, 15 * 60 * 1000);
 }
 
 //Logs the bot in
@@ -71,7 +84,7 @@ client.on("ready", () => {
                 var weatherInfo = JSON.parse(data);
                 var dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
                 //Sends a message on the walking channel with the weather data and asks for who is walking
-                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a " + affirmationEmoji + ": other emojis or lack thereof are ignored.").then((msg) => {
+                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a " + affirmationEmoji + "; other emojis or lack thereof are ignored.").then((msg) => {
                     //Bot reacts to its own message with the necessary emoji for ease of neighbor use
                     msg.react(affirmationEmoji);
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
@@ -87,9 +100,10 @@ client.on("ready", () => {
                         if (walkers.length > 0) {
                             walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers.map((user) => neighbors[user.tag])) + ".");
                         } else {
-                            walkingChannel.send("No one is walking today... :(");
+                            walkingChannel.send("No one is walking today... 🙁");
                         }
                         //TODO: collect statistics on who is walking
+                        hasFinished = true;
                     }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
                 });
             });
