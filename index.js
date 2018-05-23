@@ -42,7 +42,7 @@ function formatArrayToString(array) {
 client.on('ready', () => {
 
     //Gets the channel that the bot will send messages in
-    var walkingChannel = client.channels.array().filter(function (channel) {
+    var walkingChannel = client.channels.array().filter((channel) => {
         return channel.id == process.env.WalkingChannelID;
     })[0];
 
@@ -55,22 +55,20 @@ client.on('ready', () => {
     }
 
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
-    setTimeout(function () {
+    setTimeout(() => {
         //Gets the weather from the OpenWeatherMap API
         https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
             //API response gets accumulated into data
             let data = '';
-            response.on('data', function(chunk) {
-                data += chunk;
-            });
+            response.on('data', (chunk) => { data += chunk; });
             //After response has been fully collected, the response gets parsed and the rest of the program continues
-            response.on('end', function() {
+            response.on('end', () => {
                 var weatherInfo = JSON.parse(data);
                 var dateFormat = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 //Sends a message on the walking channel with the weather data and asks for who is walking
-                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a '" + affirmationEmoji + "': other emojis or lack thereof are ignored.").then(function (msg) {
+                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a '" + affirmationEmoji + "': other emojis or lack thereof are ignored.").then((msg) => {
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
-                    setTimeout(function() {
+                    setTimeout(() => {
                         var reactions = msg.reactions.array();
                         var walkers = [];
                         for (var i = 0; i < reactions.length; i++) {
