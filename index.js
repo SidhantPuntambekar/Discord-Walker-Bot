@@ -12,6 +12,8 @@ client.login(process.env.DiscordKey.toString());
 
 //A list of tags of neighbors who walk and will have data collected on them
 var neighbors = ['Lord Strainer#0454', 'IIPerson#1723', 'Kxoe#8732', 'wussupnik#6607'];
+//What emoji will be used for affirmation of walking
+var affirmationEmoji = "👍";
 
 //The times at which the bot will be active
 var queryTime = { hour: 6, minute: 15 };
@@ -66,18 +68,22 @@ client.on('ready', () => {
                 var weatherInfo = JSON.parse(data);
                 var dateFormat = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 //Sends a message on the walking channel with the weather data and asks for who is walking
-                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! Make sure to give this message a 👍 if you are walking, or a 👎 if you aren't. No response is taken as not walking!").then(function (msg) {
+                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! For those who are walking, please react to this message with a '" + affirmationEmoji + "': other emojis or lack thereof are ignored.").then(function (msg) {
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
                     setTimeout(function() {
                         var reactions = msg.reactions.array();
                         var walkers = [];
                         for (var i = 0; i < reactions.length; i++) {
                             var reaction = reactions[i];
-                            if (reaction.emoji.toString() == "👍") {
+                            if (reaction.emoji.toString() == affirmationEmoji) {
                                 walkers = reaction.users.array().filter((user) => neighbors.indexOf(user.tag) > -1).map((user) => user.username);
                             }
                         }
-                        walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers) + ".");
+                        if (walkers.length > 0) {
+                            walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers) + ".");
+                        } else {
+                            walkingChannel.send("No one is walking today... :(");
+                        }
                         //TODO: collect statistics on who is walking
                     }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
                 });
