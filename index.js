@@ -67,8 +67,9 @@ client.on("ready", () => {
     //A function that gets the current date and time
     function now() { return new Date(); };
 
-    //On weekends (0 is sunday, 6 is saturday), the bot doesn't do anything
-    if (now().getDay() % 6 === 0) {
+    //On weekends (0 is sunday, 6 is saturday) or after the display time, the bot doesn't do anything
+    if (now().getDay() % 6 === 0 || (now().getHours() > displayTime.hour && now().getMinutes() > displayTime.minute)) {
+        hasFinished = true;
         return;
     }
 
@@ -97,10 +98,13 @@ client.on("ready", () => {
                             var reaction = reactions[i];
                             if (reaction.emoji.toString() == affirmationEmoji) {
                                 walkers = reaction.users.array().filter((user) => "tag" in user && user.tag in neighbors);
+                                break;
                             }
                         }
-                        if (walkers.length > 0) {
+                        if (walkers.length > 1) {
                             walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers.map((user) => neighbors[user.tag])) + ".");
+                        } else if (walkers.length == 1) {
+                            walkingChannel.send(neighbors[walkers[0].tag] + " is a very cool neighbor.");
                         } else {
                             walkingChannel.send("No one is walking today... 🙁");
                         }
