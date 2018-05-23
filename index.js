@@ -10,7 +10,7 @@ if (process.env.DiscordKey == undefined) {
 //Logs the bot in
 client.login(process.env.DiscordKey.toString());
 
-//The persons whomst shall walkst amongst the enemies before school
+//A list of tags of neighbors who walk and will have data collected on them
 var neighbors = ['Lord Strainer#0454', 'IIPerson#1723', 'Kxoe#8732', 'wussupnik#6607'];
 
 //The times at which the bot will be active
@@ -20,7 +20,7 @@ var displayTime = { hour: 8, minute: 15 };
 /**
  * Formats an array to an appropriate string
  */
-function formatArrray(array) {
+function formatArrayToString(array) {
     if (array.length == 0) {
         return "";
     }
@@ -52,19 +52,22 @@ client.on('ready', () => {
         return;
     }
 
-    //Schedules the bot to read the weather and ask for walkers in the morning
+    //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     setTimeout(function () {
-        //Gets and then displays the weather from OpenWeatherMap
+        //Gets the weather from the OpenWeatherMap API
         https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
+            //API response gets accumulated into data
             let data = '';
             response.on('data', function(chunk) {
                 data += chunk;
             });
+            //After response has been fully collected, the response gets parsed and the rest of the program continues
             response.on('end', function() {
                 var weatherInfo = JSON.parse(data);
                 var dateFormat = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                //Sends a message on the walking channel with the weather data and asks for who is walking
                 walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + weatherInfo.weather[0].description + "! Make sure to give this message a 👍 if you are walking, or a 👎 if you aren't. No response is taken as not walking!").then(function (msg) {
-                    //After a while, the bot counts who is walking and gets statistics and then displays them
+                    //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
                     setTimeout(function() {
                         var reactions = msg.reactions.array();
                         var walkers = [];
@@ -74,13 +77,12 @@ client.on('ready', () => {
                                 walkers = reaction.users.array().filter((user) => neighbors.indexOf(user.tag) > -1).map((user) => user.username);
                             }
                         }
-                        walkingChannel.send("The cool neighbors today are " + formatArrray(walkers) + ".");
+                        walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers) + ".");
                         //TODO: collect statistics on who is walking
-                    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now()); //Above happens at 8:15 every day
+                    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
                 });
             });
         });
-    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), queryTime.hour, queryTime.minute, 0, 0) - now()); //Above happens at 6:15 every day
+    }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), queryTime.hour, queryTime.minute, 0, 0) - now());
 
 });
-
