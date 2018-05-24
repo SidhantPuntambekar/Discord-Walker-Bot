@@ -6,9 +6,12 @@ const client = new Discord.Client();
 var hasFinished = false;
 
 //If environment variables aren't already available, load them from file
-if (process.env.DiscordKey == undefined) {
+if (process.env.PORT == undefined) {
     require("dotenv").load()
 } else { //If environment variables are already available, then Heroku is being used; below will keep Heroku app awake
+    //Binds the app to the heroku port
+    var express = require('express');
+    express().listen(process.env.PORT, () => {});
     var herokuTimer;
     //Timer will ping application every 15 minutes until bot has finished its execution
     herokuTimer = setInterval(() => {
