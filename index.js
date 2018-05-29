@@ -77,7 +77,7 @@ client.on("ready", () => {
     }
 
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
-    setTimeout(() => {
+    client.setTimeout(() => {
         //Gets the weather from the OpenWeatherMap API
         https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
             //API response gets accumulated into data
@@ -94,7 +94,7 @@ client.on("ready", () => {
                     //Bot reacts to its own message with the necessary emoji for ease of neighbor use
                     msg.react(affirmationEmoji);
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
-                    setTimeout(() => {
+                    client.setTimeout(() => {
                         var reactions = msg.reactions.array();
                         var walkers = [];
                         for (var i = 0; i < reactions.length; i++) {
