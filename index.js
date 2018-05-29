@@ -71,7 +71,7 @@ client.on("ready", () => {
     function now() { return new Date(); };
 
     //On weekends (0 is sunday, 6 is saturday) or after the display time, the bot doesn't do anything
-    if (now().getDay() % 6 === 0 || (now().getHours() > displayTime.hour && now().getMinutes() > displayTime.minute)) {
+    if (now().getDay() % 6 === 0 || new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now() < 0) {
         hasFinished = true;
         return;
     }
