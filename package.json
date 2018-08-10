@@ -8,6 +8,9 @@
   },
   "author": "Saurabh Totey",
   "license": "MIT",
+  "repository": {
+    "url": "https://www.github.com/SaurabhTotey/Discord-Walker-Bot"
+  },
   "dependencies": {
     "bufferutil": "^3.0.5",
     "discord.js": "^11.3.2",

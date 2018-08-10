@@ -63,15 +63,14 @@ function formatArrayToString(array) {
 client.on("ready", () => {
 
     //Gets the channel that the bot will send messages in
-    var walkingChannel = client.channels.array().filter((channel) => {
-        return channel.id == process.env.WalkingChannelID;
-    })[0];
+    var walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
 
     //A function that gets the current date and time
     function now() { return new Date(); };
 
     //On weekends (0 is sunday, 6 is saturday) or after the display time, the bot doesn't do anything
     if (now().getDay() % 6 === 0 || new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now() < 0) {
+        walkingChannel.send("This message is only being sent for testing purposes. It is temporary until Saurabh or someone else can find and fix the bug. The bug is that I won't actually do anything even when I am supposed to. However, this part of the code should only be reachable if I am supposed to not do anything. ¯\\_(ツ)_/¯")
         hasFinished = true;
         return;
     }
@@ -79,10 +78,10 @@ client.on("ready", () => {
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     client.setTimeout(() => {
         //Gets the weather from the OpenWeatherMap API
-        https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), (response) => {
+        https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), response => {
             //API response gets accumulated into data
             let data = '';
-            response.on("data", (chunk) => { data += chunk; });
+            response.on("data", chunk => data += chunk);
             //After response has been fully collected, the response gets parsed and the rest of the program continues
             response.on("end", () => {
                 var weatherInfo = JSON.parse(data);
@@ -90,7 +89,7 @@ client.on("ready", () => {
                 //Sets the icon of the bot to an icon of the current weather
                 client.user.setAvatar("http://openweathermap.org/img/w/" + weatherInfo.weather[0].icon + ".png");
                 //Sends a message on the walking channel with the weather data and asks for who is walking
-                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + formatArrayToString(weatherInfo.weather.map((weather) => weather.description)) + "! For those who are walking, please react to this message with a " + affirmationEmoji + "; other emojis or lack thereof are ignored.").then((msg) => {
+                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + formatArrayToString(weatherInfo.weather.map(weather => weather.description)) + "! For those who are walking, please react to this message with a " + affirmationEmoji + "; other emojis or lack thereof are ignored.").then(msg => {
                     //Bot reacts to its own message with the necessary emoji for ease of neighbor use
                     msg.react(affirmationEmoji);
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
@@ -100,12 +99,12 @@ client.on("ready", () => {
                         for (var i = 0; i < reactions.length; i++) {
                             var reaction = reactions[i];
                             if (reaction.emoji.toString() == affirmationEmoji) {
-                                walkers = reaction.users.array().filter((user) => "tag" in user && user.tag in neighbors);
+                                walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
                                 break;
                             }
                         }
                         if (walkers.length > 1) {
-                            walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers.map((user) => neighbors[user.tag])) + ".");
+                            walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers.map(user => neighbors[user.tag])) + ".");
                         } else if (walkers.length == 1) {
                             walkingChannel.send(neighbors[walkers[0].tag] + " is a very cool neighbor.");
                         } else {
