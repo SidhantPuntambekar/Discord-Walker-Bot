@@ -17,6 +17,7 @@ if (process.env.PORT == undefined) {
     herokuTimer = setInterval(() => {
         if (hasFinished) {
             clearInterval(herokuTimer);
+            process.exit(0);
         } else {
             https.get("https://stormy-walker.herokuapp.com");
         }
@@ -24,7 +25,7 @@ if (process.env.PORT == undefined) {
 }
 
 //Logs the bot in
-client.login(process.env.DiscordKey.toString());
+client.login(`${process.env.DiscordKey}`);
 
 //A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them
 var neighbors = {
@@ -48,10 +49,10 @@ function formatArrayToString(array) {
         return "";
     }
     if (array.length == 1) {
-        return array[0].toString();
+        return `${array[0]}`;
     }
     if (array.length == 2) {
-        return array[0].toString() + " and " + array[1].toString();
+        return `${array[0]} and ${array[1]}`;
     }
     return array.slice(0, -2).join(", ") + (array.slice(0, -2).length ? ", " : "") + array.slice(-2).join(", and ");
 }
@@ -78,7 +79,7 @@ client.on("ready", () => {
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     client.setTimeout(() => {
         //Gets the weather from the OpenWeatherMap API
-        https.get("https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=" + process.env.OpenWeatherKey.toString(), response => {
+        https.get(`https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=${process.env.OpenWeatherKey}`, response => {
             //API response gets accumulated into data
             let data = '';
             response.on("data", chunk => data += chunk);
@@ -87,9 +88,9 @@ client.on("ready", () => {
                 var weatherInfo = JSON.parse(data);
                 var dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
                 //Sets the icon of the bot to an icon of the current weather
-                client.user.setAvatar("http://openweathermap.org/img/w/" + weatherInfo.weather[0].icon + ".png");
+                client.user.setAvatar(`http://openweathermap.org/img/w/${weatherInfo.weather[0].icon}.png`);
                 //Sends a message on the walking channel with the weather data and asks for who is walking
-                walkingChannel.send("Good morning everyone! For " + now().toLocaleDateString("en-US", dateFormat) + ", the temperature is " + weatherInfo.main.temp + "K with a humidity of " + weatherInfo.main.humidity + "%. Wind speeds currently are " + weatherInfo.wind.speed + "m/s. The weather can be summed up by " + formatArrayToString(weatherInfo.weather.map(weather => weather.description)) + "! For those who are walking, please react to this message with a " + affirmationEmoji + "; other emojis or lack thereof are ignored.").then(msg => {
+                walkingChannel.send(`Good morning everyone! For ${now().toLocaleDateString("en-US", dateFormat)}, the temperature is ${weatherInfo.main.temp}K with a humidity of ${weatherInfo.main.humidity}%. Wind speeds currently are ${weatherInfo.wind.speed}m/s. The weather can be summed up by ${formatArrayToString(weatherInfo.weather.map(weather => weather.description))}! For those who are walking, please react to this message with a ${affirmationEmoji}; other emojis or lack thereof are ignored.`).then(msg => {
                     //Bot reacts to its own message with the necessary emoji for ease of neighbor use
                     msg.react(affirmationEmoji);
                     //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
@@ -98,15 +99,15 @@ client.on("ready", () => {
                         var walkers = [];
                         for (var i = 0; i < reactions.length; i++) {
                             var reaction = reactions[i];
-                            if (reaction.emoji.toString() == affirmationEmoji) {
+                            if (`${reaction.emoji}` == affirmationEmoji) {
                                 walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
                                 break;
                             }
                         }
                         if (walkers.length > 1) {
-                            walkingChannel.send("The cool neighbors today are " + formatArrayToString(walkers.map(user => neighbors[user.tag])) + ".");
+                            walkingChannel.send(`The cool neighbors today are ${formatArrayToString(walkers.map(user => neighbors[user.tag]))}.`);
                         } else if (walkers.length == 1) {
-                            walkingChannel.send(neighbors[walkers[0].tag] + " is a very cool neighbor.");
+                            walkingChannel.send(`${neighbors[walkers[0].tag]} is a very cool neighbor.`);
                         } else {
                             walkingChannel.send("No one is walking today... 🙁");
                         }
