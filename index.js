@@ -11,7 +11,7 @@ if (process.env.PORT == undefined) {
 } else { //If environment variables are already available, then Heroku is being used; below will keep Heroku app awake
     //Binds the app to the heroku port
     var express = require('express');
-    express().listen(process.env.PORT, () => {});
+    express().listen(process.env.PORT);
     var herokuTimer;
     //Timer will ping application every 15 minutes until bot has finished its execution
     herokuTimer = setInterval(() => {
@@ -19,7 +19,7 @@ if (process.env.PORT == undefined) {
             clearInterval(herokuTimer);
             process.exit(0);
         } else {
-            https.get("https://stormy-walker.herokuapp.com");
+            request("https://stormy-walker.herokuapp.com");
         }
     }, 15 * 60 * 1000);
 }
@@ -71,7 +71,7 @@ client.on("ready", () => {
 
     //On weekends (0 is sunday, 6 is saturday) or after the display time, the bot doesn't do anything
     if (now().getDay() % 6 === 0 || new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now() < 0) {
-        walkingChannel.send("This message is only being sent for testing purposes. It is temporary until Saurabh or someone else can find and fix the bug. The bug is that I won't actually do anything even when I am supposed to. However, this part of the code should only be reachable if I am supposed to not do anything. ¯\\_(ツ)_/¯")
+        walkingChannel.send("This message is only being sent for testing purposes. It is temporary until Saurabh or someone else can find and fix the bug. The bug is that I won't actually do anything even when I am supposed to. However, this part of the code should only be reachable if I am supposed to not do anything. ¯\\_(ツ)_/¯");
         hasFinished = true;
         return;
     }
