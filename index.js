@@ -3,16 +3,16 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 //Whether the bot has performed its function today
-var hasFinished = false;
+let hasFinished = false;
 
 //If environment variables aren't already available, load them from file
 if (process.env.PORT == undefined) {
     require("dotenv").load()
 } else { //If environment variables are already available, then Heroku is being used; below will keep Heroku app awake
     //Binds the app to the heroku port
-    var express = require('express');
+    let express = require('express');
     express().listen(process.env.PORT);
-    var herokuTimer;
+    let herokuTimer;
     //Timer will ping application every 15 minutes until bot has finished its execution
     herokuTimer = setInterval(() => {
         if (hasFinished) {
@@ -27,19 +27,19 @@ if (process.env.PORT == undefined) {
 //Logs the bot in
 client.login(`${process.env.DiscordKey}`);
 
-//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them
-var neighbors = {
+//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them TODO: instead just store list of tags, and have tags to name be in a the database of stats
+let neighbors = {
     "Lord Strainer#0454": "Saurabh",
     "IIPerson#1723": "Elia",
     "Kxoe#8732": "Kadin",
     "wussupnik#6607": "Nikaash"
 };
 //What emoji will be used for affirmation of walking
-var affirmationEmoji = "👍";
+let affirmationEmoji = "👍";
 
 //The times at which the bot will be active
-var queryTime = { hour: 6, minute: 15 };
-var displayTime = { hour: 8, minute: 15 };
+let queryTime = { hour: 6, minute: 15 };
+let displayTime = { hour: 8, minute: 15 };
 
 /**
  * Formats an array to an appropriate string
@@ -64,7 +64,7 @@ function formatArrayToString(array) {
 client.on("ready", () => {
 
     //Gets the channel that the bot will send messages in
-    var walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
+    let walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
 
     //A function that gets the current date and time
     function now() { return new Date(); };
@@ -80,8 +80,8 @@ client.on("ready", () => {
     client.setTimeout(() => {
         //Gets the weather from the OpenWeatherMap API
         request(`https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=${process.env.OpenWeatherKey}`, (error, response, body) => {
-            var weatherInfo = JSON.parse(body);
-            var dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+            let weatherInfo = JSON.parse(body);
+            let dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
             //Sets the icon of the bot to an icon of the current weather
             client.user.setAvatar(`http://openweathermap.org/img/w/${weatherInfo.weather[0].icon}.png`);
             //Sends a message on the walking channel with the weather data and asks for who is walking
@@ -90,10 +90,10 @@ client.on("ready", () => {
                 msg.react(affirmationEmoji);
                 //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
                 client.setTimeout(() => {
-                    var reactions = msg.reactions.array();
-                    var walkers = [];
-                    for (var i = 0; i < reactions.length; i++) {
-                        var reaction = reactions[i];
+                    let reactions = msg.reactions.array();
+                    let walkers = [];
+                    for (let i = 0; i < reactions.length; i++) {
+                        let reaction = reactions[i];
                         if (`${reaction.emoji}` == affirmationEmoji) {
                             walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
                             break;
