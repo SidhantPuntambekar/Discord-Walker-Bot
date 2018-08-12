@@ -12,11 +12,10 @@
     "url": "https://www.github.com/SaurabhTotey/Discord-Walker-Bot"
   },
   "dependencies": {
-    "bufferutil": "^3.0.5",
-    "discord.js": "^11.3.2",
-    "dotenv": "^5.0.1",
+    "discord.js": "^11.4.0",
+    "dotenv": "^6.0.0",
     "express": "^4.16.3",
-    "opusscript": "0.0.6",
-    "pg": "^7.4.3"
+    "pg": "^7.4.3",
+    "request": "^2.88.0"
   }
 }
