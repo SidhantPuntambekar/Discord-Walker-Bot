@@ -13,7 +13,7 @@ if (process.env.PORT == undefined) {
     let express = require('express');
     express().listen(process.env.PORT);
     let herokuTimer;
-    //Timer will ping application every 15 minutes until bot has finished its execution
+    //Timer will ping application every 5 minutes until bot has finished its execution
     herokuTimer = setInterval(() => {
         if (hasFinished) {
             clearInterval(herokuTimer);
@@ -21,7 +21,7 @@ if (process.env.PORT == undefined) {
         } else {
             request("https://stormy-walker.herokuapp.com");
         }
-    }, 15 * 60 * 1000);
+    }, 5 * 60 * 1000);
 }
 
 //Logs the bot in
