@@ -47,6 +47,11 @@ if (process.env.PORT == undefined) {
     }, 5 * 60 * 1000);
 }
 
+//If the bot shouldn't be running, leave
+if (!shouldBeActive()) {
+    process.exit(0);
+}
+
 //Logs the bot in
 client.login(`${process.env.DiscordKey}`);
 
@@ -74,13 +79,6 @@ client.on("ready", () => {
 
     //Gets the channel that the bot will send messages in
     let walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
-
-    //Exit if the bot shouldn't be active
-    if (!shouldBeActive()) {
-        walkingChannel.send("This message is only being sent for testing purposes. It is temporary until Saurabh or someone else can find and fix the bug. The bug is that I won't actually do anything even when I am supposed to. However, this part of the code should only be reachable if I am supposed to not do anything. ¯\\_(ツ)_/¯");
-        process.exit(0);
-        return;
-    }
 
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     client.setTimeout(() => {
