@@ -2,8 +2,31 @@ const request = require("request");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
-//Whether the bot has performed its function today
-let hasFinished = false;
+//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them TODO: instead just store list of tags, and have tags to name be in a the database of stats
+let neighbors = {
+    "Lord Strainer#0454": "Saurabh",
+    "IIPerson#1723": "Elia",
+    "Kxoe#8732": "Kadin",
+    "wussupnik#6607": "Nikaash"
+};
+
+//What emoji will be used for affirmation of walking
+let affirmationEmoji = "👍";
+
+//The times at which the bot will be active
+let queryTime = { hour: 6, minute: 15 };
+let displayTime = { hour: 8, minute: 15 };
+
+//A function that gets the current date and time
+function now() { return new Date(); };
+
+/**
+ * A function that returns whether the bot should be active right now
+ * Days 0 and 6 are weekends, so the bot shouldn't be active then
+ */
+function shouldBeActive() {
+    return now().getDay() % 6 !== 0 && new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now() >= 0;
+}
 
 //If environment variables aren't already available, load them from file
 if (process.env.PORT == undefined) {
@@ -15,7 +38,7 @@ if (process.env.PORT == undefined) {
     let herokuTimer;
     //Timer will ping application every 5 minutes until bot has finished its execution
     herokuTimer = setInterval(() => {
-        if (hasFinished) {
+        if (!shouldBeActive()) {
             clearInterval(herokuTimer);
             process.exit(0);
         } else {
@@ -26,20 +49,6 @@ if (process.env.PORT == undefined) {
 
 //Logs the bot in
 client.login(`${process.env.DiscordKey}`);
-
-//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them TODO: instead just store list of tags, and have tags to name be in a the database of stats
-let neighbors = {
-    "Lord Strainer#0454": "Saurabh",
-    "IIPerson#1723": "Elia",
-    "Kxoe#8732": "Kadin",
-    "wussupnik#6607": "Nikaash"
-};
-//What emoji will be used for affirmation of walking
-let affirmationEmoji = "👍";
-
-//The times at which the bot will be active
-let queryTime = { hour: 6, minute: 15 };
-let displayTime = { hour: 8, minute: 15 };
 
 /**
  * Formats an array to an appropriate string
@@ -66,13 +75,10 @@ client.on("ready", () => {
     //Gets the channel that the bot will send messages in
     let walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
 
-    //A function that gets the current date and time
-    function now() { return new Date(); };
-
-    //On weekends (0 is sunday, 6 is saturday) or after the display time, the bot doesn't do anything
-    if (now().getDay() % 6 === 0 || new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now() < 0) {
+    //Exit if the bot shouldn't be active
+    if (!shouldBeActive()) {
         walkingChannel.send("This message is only being sent for testing purposes. It is temporary until Saurabh or someone else can find and fix the bug. The bug is that I won't actually do anything even when I am supposed to. However, this part of the code should only be reachable if I am supposed to not do anything. ¯\\_(ツ)_/¯");
-        hasFinished = true;
+        process.exit(0);
         return;
     }
 
@@ -107,7 +113,6 @@ client.on("ready", () => {
                         walkingChannel.send("No one is walking today... 🙁");
                     }
                     //TODO: collect statistics on who is walking
-                    hasFinished = true;
                 }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
             });
         });
