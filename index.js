@@ -13,11 +13,11 @@ let neighbors = {
 //What emoji will be used for affirmation of walking
 let affirmationEmoji = "👍";
 
-//The times at which the bot will be active
-let queryTime = { hour: 6, minute: 15 };
-let displayTime = { hour: 8, minute: 15 };
+//The times at which the bot will be active in UTC
+let queryTime = { hour: 12, minute: 15 };
+let displayTime = { hour: 2, minute: 15 };
 
-//A function that gets the current date and time
+//A function that gets the current date and time in UTC
 function now() { return new Date(); };
 
 /**
@@ -25,7 +25,7 @@ function now() { return new Date(); };
  * Days 0 and 6 are weekends, so the bot shouldn't be active then
  */
 function shouldBeActive() {
-    return now().getDay() % 6 !== 0 && new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now() >= 0;
+    return now().getDay() % 6 !== 0 && now() <= new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0);
 }
 
 //If environment variables aren't already available, load them from file
