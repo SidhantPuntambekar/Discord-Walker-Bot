@@ -14,7 +14,7 @@ let neighbors = {
 let affirmationEmoji = "👍";
 
 //The times at which the bot will be active in UTC
-let queryTime = { hour: 12, minute: 15 };
+let queryTime = { hour: 0, minute: 15 };
 let displayTime = { hour: 2, minute: 15 };
 
 //A function that gets the current date and time in UTC
