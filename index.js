@@ -1,14 +1,34 @@
 const request = require("request");
 const Discord = require("discord.js");
+const pg = require("pg");
 const client = new Discord.Client();
 
-//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them TODO: instead just store list of tags, and have tags to name be in a the database of stats
+//The client for the database; left uninitialized unless is on Heroku
+var databaseClient;
+
+//A dictionary of discord tags to names for the neighbors that will be walkinga nd have data collected on them
 let neighbors = {
     "Lord Strainer#0454": "Saurabh",
     "IIPerson#1723": "Elia",
     "Kxoe#8732": "Kadin",
     "wussupnik#6607": "Nikaash"
 };
+
+/**
+ * Formats an array to an appropriate string
+ */
+function formatArrayToString(array) {
+    if (array.length == 0) {
+        return "";
+    }
+    if (array.length == 1) {
+        return `${array[0]}`;
+    }
+    if (array.length == 2) {
+        return `${array[0]} and ${array[1]}`;
+    }
+    return array.slice(0, -2).join(", ") + (array.slice(0, -2).length ? ", " : "") + array.slice(-2).join(", and ");
+}
 
 //What emoji will be used for affirmation of walking
 let affirmationEmoji = "👍";
@@ -35,9 +55,11 @@ if (process.env.PORT == undefined) {
     //Binds the app to the heroku port
     let express = require('express');
     express().listen(process.env.PORT);
-    let herokuTimer;
+    //Initializes and connects the database client
+    databaseClient = new pg({ connectionString: process.env.DATABASE_URL });
+    await databaseClient.connect();
     //Timer will ping application every 5 minutes until bot has finished its execution
-    herokuTimer = setInterval(() => {
+    let herokuTimer = setInterval(() => {
         if (!shouldBeActive()) {
             clearInterval(herokuTimer);
             process.exit(0);
@@ -54,22 +76,6 @@ if (!shouldBeActive()) {
 
 //Logs the bot in
 client.login(`${process.env.DiscordKey}`);
-
-/**
- * Formats an array to an appropriate string
- */
-function formatArrayToString(array) {
-    if (array.length == 0) {
-        return "";
-    }
-    if (array.length == 1) {
-        return `${array[0]}`;
-    }
-    if (array.length == 2) {
-        return `${array[0]} and ${array[1]}`;
-    }
-    return array.slice(0, -2).join(", ") + (array.slice(0, -2).length ? ", " : "") + array.slice(-2).join(", and ");
-}
 
 /**
  * Main entry point for the program; what happens when the bot logs in
@@ -110,7 +116,14 @@ client.on("ready", () => {
                     } else {
                         walkingChannel.send("No one is walking today... 🙁");
                     }
-                    //TODO: collect statistics on who is walking
+                    //Adds the walking information to the database if database is available
+                    if (databaseClient == undefined) {
+                        return;
+                    }
+                    walkers.forEach(walker => {
+                        let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker])).rows[0]["id"];
+                        await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
+                    });
                 }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
             });
         });
