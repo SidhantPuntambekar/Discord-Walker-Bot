@@ -56,8 +56,8 @@ if (process.env.PORT == undefined) {
     let express = require('express');
     express().listen(process.env.PORT);
     //Initializes and connects the database client
-    databaseClient = new pg({ connectionString: process.env.DATABASE_URL });
-    await databaseClient.connect();
+    databaseClient = new pg.Client({ connectionString: process.env.DATABASE_URL });
+    (async () => await databaseClient.connect())();
     //Timer will ping application every 5 minutes until bot has finished its execution
     let herokuTimer = setInterval(() => {
         if (!shouldBeActive()) {
@@ -120,7 +120,7 @@ client.on("ready", () => {
                     if (databaseClient == undefined) {
                         return;
                     }
-                    walkers.forEach(walker => {
+                    walkers.forEach(async (walker) => {
                         let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker])).rows[0]["id"];
                         await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
                     });
