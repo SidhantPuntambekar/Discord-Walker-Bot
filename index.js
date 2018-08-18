@@ -45,7 +45,7 @@ function now() { return new Date(); };
  * Days 0 and 6 are weekends, so the bot shouldn't be active then
  */
 function shouldBeActive() {
-    return now().getDay() % 6 !== 0 && now() <= new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0);
+    return /*now().getDay() % 6 !== 0 &&*/ now() <= new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0);
 }
 
 //If environment variables aren't already available, load them from file
