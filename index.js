@@ -45,7 +45,7 @@ function now() { return new Date(); };
  * Days 0 and 6 are weekends, so the bot shouldn't be active then
  */
 function shouldBeActive() {
-    return /*now().getDay() % 6 !== 0 &&*/ now() <= new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0);
+    return now().getDay() % 6 !== 0 && now() <= new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0);
 }
 
 //If environment variables aren't already available, load them from file
@@ -120,8 +120,8 @@ client.on("ready", () => {
                     if (databaseClient == undefined) {
                         return;
                     }
-                    walkers.forEach(async (walker) => {
-                        let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker])).rows[0]["id"];
+                    walkers.forEach(async walker => {
+                        let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker.tag])).rows[0]["id"];
                         await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
                     });
                 }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
