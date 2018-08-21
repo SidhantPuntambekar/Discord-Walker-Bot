@@ -35,6 +35,7 @@ let affirmationEmoji = "👍";
 
 //The times at which the bot will be active in UTC
 let queryTime = { hour: 12, minute: 15 };
+let tentativeConfirmTime = { hour: 13, minute: 30 };
 let displayTime = { hour: 14, minute: 15 };
 
 //A function that gets the current date and time in UTC
@@ -89,43 +90,46 @@ client.on("ready", () => {
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     client.setTimeout(() => {
         //Gets the weather from the OpenWeatherMap API
-        request(`https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=${process.env.OpenWeatherKey}`, (error, response, body) => {
+        request(`https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=${process.env.OpenWeatherKey}`, async (error, response, body) => {
             let weatherInfo = JSON.parse(body);
             let dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
             //Sets the icon of the bot to an icon of the current weather
             client.user.setAvatar(`http://openweathermap.org/img/w/${weatherInfo.weather[0].icon}.png`);
             //Sends a message on the walking channel with the weather data and asks for who is walking
-            walkingChannel.send(`Good morning everyone! For ${now().toLocaleDateString("en-US", dateFormat)}, the temperature is ${weatherInfo.main.temp}K with a humidity of ${weatherInfo.main.humidity}%. Wind speeds currently are ${weatherInfo.wind.speed}m/s. The weather can be summed up by ${formatArrayToString(weatherInfo.weather.map(weather => weather.description))}! For those who are walking, please react to this message with a ${affirmationEmoji}; other emojis or lack thereof are ignored.`).then(msg => {
-                //Bot reacts to its own message with the necessary emoji for ease of neighbor use
-                msg.react(affirmationEmoji);
-                //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
-                client.setTimeout(() => {
-                    let reactions = msg.reactions.array();
-                    let walkers = [];
-                    for (let i = 0; i < reactions.length; i++) {
-                        let reaction = reactions[i];
-                        if ("emoji" in reaction && `${reaction.emoji}` == affirmationEmoji) {
-                            walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
-                            break;
-                        }
-                    }
-                    if (walkers.length > 1) {
-                        walkingChannel.send(`The cool neighbors today are ${formatArrayToString(walkers.map(user => neighbors[user.tag]))}.`);
-                    } else if (walkers.length == 1) {
-                        walkingChannel.send(`${neighbors[walkers[0].tag]} is a very cool neighbor.`);
-                    } else {
-                        walkingChannel.send("No one is walking today... 🙁");
-                    }
-                    //Adds the walking information to the database if database is available
-                    if (databaseClient == undefined) {
-                        return;
-                    }
-                    walkers.forEach(async walker => {
-                        let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker.tag])).rows[0]["id"];
-                        await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
-                    });
-                }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
-            });
+            let queryMessage = await walkingChannel.send(`Good morning everyone! For ${now().toLocaleDateString("en-US", dateFormat)}, the temperature is ${weatherInfo.main.temp}K with a humidity of ${weatherInfo.main.humidity}%. Wind speeds currently are ${weatherInfo.wind.speed}m/s. The weather can be summed up by ${formatArrayToString(weatherInfo.weather.map(weather => weather.description))}! For those who are walking, please react to this message with a ${affirmationEmoji}; other emojis or lack thereof are ignored.`);
+            //Bot reacts to its own message with the necessary emoji for ease of neighbor use
+            let reaction = await queryMessage.react(affirmationEmoji);
+            //Sends out a message of who so far has tentatively said they would be walking
+            client.setTimeout(() => {
+                let walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
+                let cancelWarning = "It still isn't too late to confirm! You may still react to the previous message to signal that you will walk. You may also remove your reaction if you actually will not be walking.";
+                if (walkers.length > 1) {
+                    walkingChannel.send(`So far, ${formatArrayToString(walkers.map(user => neighbors[user.tag]))} have confirmed that they are walking. ${cancelWarning}`);
+                } else if (walkers.length == 1) {
+                    walkingChannel.send(`${neighbors[walkers[0].tag]} has confirmed they are walking. Don't leave them to walk alone! ${cancelWarning}`);
+                } else {
+                    walkingChannel.send(`No one has said they will walk today... 🙁 ${cancelWarning}`);
+                }
+            }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), tentativeConfirmTime.hour, tentativeConfirmTime.minute, 0, 0) - now());
+            //At displayTime, bot reads the original message's reactions and displays who is walking; also updates stats for each neighbor
+            client.setTimeout(() => {
+                let walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
+                if (walkers.length > 1) {
+                    walkingChannel.send(`The cool neighbors today are ${formatArrayToString(walkers.map(user => neighbors[user.tag]))}.`);
+                } else if (walkers.length == 1) {
+                    walkingChannel.send(`${neighbors[walkers[0].tag]} is a very cool neighbor.`);
+                } else {
+                    walkingChannel.send("No one is walking today... 🙁");
+                }
+                //Adds the walking information to the database if database is available
+                if (databaseClient == undefined) {
+                    return;
+                }
+                walkers.forEach(async walker => {
+                    let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker.tag])).rows[0]["id"];
+                    await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
+                });
+            }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
         });
     }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), queryTime.hour, queryTime.minute, 0, 0) - now());
 
