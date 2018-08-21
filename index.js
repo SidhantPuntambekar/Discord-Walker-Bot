@@ -104,7 +104,7 @@ client.on("ready", () => {
                     let walkers = [];
                     for (let i = 0; i < reactions.length; i++) {
                         let reaction = reactions[i];
-                        if (`${reaction.emoji}` == affirmationEmoji) {
+                        if ("emoji" in reaction && `${reaction.emoji}` == affirmationEmoji) {
                             walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors);
                             break;
                         }
