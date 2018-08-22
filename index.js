@@ -70,6 +70,11 @@ function exit() {
     process.exit(0);
 }
 
+//Leaves if the bot is outside of active hours
+if (!shouldBeActive) {
+    exit();
+}
+
 //Timer will ping application every 5 minutes until bot has finished its execution
 let herokuTimer = setInterval(() => {
     if (!shouldBeActive()) {
