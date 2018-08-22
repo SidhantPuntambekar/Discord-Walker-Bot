@@ -1,3 +1,5 @@
+"use strict";
+
 const request = require("request");
 const Discord = require("discord.js");
 const pg = require("pg");
@@ -34,9 +36,9 @@ function formatArrayToString(array) {
 let affirmationEmoji = "👍";
 
 //The times at which the bot will be active in UTC
-let queryTime = { hour: 12, minute: 15 };
-let tentativeConfirmTime = { hour: 13, minute: 30 };
-let displayTime = { hour: 14, minute: 15 };
+let queryTime = { hour: 6, minute: 15 };
+let tentativeConfirmTime = { hour: 7, minute: 30 };
+let displayTime = { hour: 8, minute: 15 };
 
 //A function that gets the current date and time in UTC
 function now() { return new Date(); };
