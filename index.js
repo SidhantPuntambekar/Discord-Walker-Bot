@@ -4,7 +4,7 @@
 require("dotenv").load()
 
 const Discord = require("discord.js");
-const express = require('express');
+const express = require("express");
 const pg = require("pg");
 const request = require("request");
 const client = new Discord.Client();
@@ -65,13 +65,14 @@ function shouldBeActive() {
  * The exit procedure for the app
  */
 function exit() {
+    console.log("Leaving.");
     client.destroy();
     databaseClient.end();
     process.exit(0);
 }
 
 //Leaves if the bot is outside of active hours
-if (!shouldBeActive) {
+if (!shouldBeActive()) {
     exit();
 }
 
@@ -87,12 +88,15 @@ let herokuTimer = setInterval(() => {
 
 //Logs the bot in
 client.login(process.env.DiscordKey);
+console.log("Starting.");
 
 /**
  * Main entry point for the program; what happens when the bot logs in
  * All bot actions need to be taken in this body
  */
 client.on("ready", () => {
+
+    console.log("Up.");
 
     //Gets the channel that the bot will send messages in
     let walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
@@ -120,6 +124,8 @@ client.on("ready", () => {
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     client.setTimeout(async () => {
 
+        console.log("Running.");
+
         //Sets the icon of the bot to an icon of the current weather
         client.user.setAvatar(`http://openweathermap.org/img/w/${(await getWeatherData()).weather[0].icon}.png`);
         //Bot sends the initial message querying who will be walking and containing weather data
@@ -144,6 +150,7 @@ client.on("ready", () => {
 
         //At displayTime, bot puts walking information in database and stops updating the previous message
         client.setTimeout(() => {
+            console.log("Done");
             client.clearInterval(queryMessageUpdater);
             queryMessage.unpin();
             reaction.users.array().filter(user => "tag" in user && user.tag in neighbors).forEach(async walker => {
