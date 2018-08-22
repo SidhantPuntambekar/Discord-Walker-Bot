@@ -44,8 +44,8 @@ function formatArrayToString(array) {
 let affirmationEmoji = "👍";
 
 //The times at which the bot will be active in UTC
-let queryTime = { hour: 6, minute: 15 };
-let displayTime = { hour: 8, minute: 15 };
+let queryTime = { hour: 12, minute: 15 };
+let displayTime = { hour: 14, minute: 15 };
 
 //The format to display dates
 let dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
