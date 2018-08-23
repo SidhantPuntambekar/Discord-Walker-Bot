@@ -65,7 +65,6 @@ function shouldBeActive() {
  * The exit procedure for the app
  */
 function exit() {
-    console.log("Leaving.");
     client.destroy();
     databaseClient.end();
     process.exit(0);
@@ -88,15 +87,12 @@ let herokuTimer = setInterval(() => {
 
 //Logs the bot in
 client.login(process.env.DiscordKey);
-console.log("Starting.");
 
 /**
  * Main entry point for the program; what happens when the bot logs in
  * All bot actions need to be taken in this body
  */
 client.on("ready", () => {
-
-    console.log("Up.");
 
     //Gets the channel that the bot will send messages in
     let walkingChannel = client.channels.array().find(channel => channel.id == process.env.WalkingChannelID);
@@ -118,13 +114,11 @@ client.on("ready", () => {
      */
     async function getMessageToSend() {
         let weatherInfo = await getWeatherData();
-        return `Good morning everyone! For ${now().toLocaleDateString("en-US", dateFormat)}, the temperature is ${weatherInfo.main.temp}K with a humidity of ${weatherInfo.main.humidity}%. Wind speeds currently are ${weatherInfo.wind.speed}m/s. The weather can be summed up by ${formatArrayToString(weatherInfo.weather.map(weather => weather.description))}! For those who are walking, please react to this message with a ${affirmationEmoji}; other emojis or lack thereof are ignored.`
+        return `Good morning everyone! For ${now().toLocaleDateString("en-US", dateFormat)}, the temperature is ${weatherInfo.main.temp}K with a humidity of ${weatherInfo.main.humidity}%. Wind speeds currently are ${weatherInfo.wind.speed}m/s. The weather can be summed up by ${formatArrayToString(weatherInfo.weather.map(weather => weather.description))}!`
     }
 
     //Schedules the bot to read the weather and ask for walkers in the morning at the query time
     client.setTimeout(async () => {
-
-        console.log("Running.");
 
         //Sets the icon of the bot to an icon of the current weather
         client.user.setAvatar(`http://openweathermap.org/img/w/${(await getWeatherData()).weather[0].icon}.png`);
@@ -145,16 +139,25 @@ client.on("ready", () => {
             } else {
                 currentWalkersMessage = "None of the neighbors have said they will walk yet... 😢";
             }
-            queryMessage.edit(`${await getMessageToSend()}\n${currentWalkersMessage}`);
+            queryMessage.edit(`${await getMessageToSend()} For those who are walking, please react to this message with a ${affirmationEmoji}; other emojis or lack thereof are ignored.\n${currentWalkersMessage}`);
         }, 15 * 1000);
 
         //At displayTime, bot puts walking information in database and stops updating the previous message
-        client.setTimeout(() => {
-            console.log("Done");
+        client.setTimeout(async () => {
             client.clearInterval(queryMessageUpdater);
             queryMessage.unpin();
-            reaction.users.array().filter(user => "tag" in user && user.tag in neighbors).forEach(async walker => {
-                let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker.tag])).rows[0]["id"];
+            let walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors).map(walker => walker.tag);
+            let finalMessage = "";
+            if (walkers.length == 0) {
+                finalMessage = "Nobody walked... 😢";
+            } else if (walkers.length == 1) {
+                finalMessage = `${walkers[0]} is the only lonely but cool walker.`;
+            } else {
+                finalMessage = `${formatArrayToString(walkers)} are pretty cool. 😎`;
+            }
+            queryMessage.edit(`${await getMessageToSend()}\n${finalMessage}`);
+            walkers.forEach(async walker => {
+                let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker])).rows[0]["id"];
                 await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
             });
             exit();
