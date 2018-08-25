@@ -151,9 +151,9 @@ client.on("ready", () => {
             if (walkers.length == 0) {
                 finalMessage = "Nobody walked... 😢";
             } else if (walkers.length == 1) {
-                finalMessage = `${walkers[0]} is the only lonely but cool walker.`;
+                finalMessage = `${neighbors[walkers[0]]} is the only lonely but cool walker.`;
             } else {
-                finalMessage = `${formatArrayToString(walkers)} are pretty cool. 😎`;
+                finalMessage = `${formatArrayToString(walkers.map(tag => neighbors[tag]))} are pretty cool. 😎`;
             }
             queryMessage.edit(`${await getMessageToSend()}\n${finalMessage}`);
             walkers.forEach(async walker => {
