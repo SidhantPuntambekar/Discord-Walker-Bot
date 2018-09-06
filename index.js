@@ -1,7 +1,7 @@
 "use strict";
 
 //Loads environment variables from .env; won't overwrite existing variables
-require("dotenv").load()
+require("dotenv").load();
 
 const Discord = require("discord.js");
 const express = require("express");
@@ -28,13 +28,13 @@ let neighbors = {
  * Formats an array to an appropriate string
  */
 function formatArrayToString(array) {
-    if (array.length == 0) {
+    if (array.length === 0) {
         return "";
     }
-    if (array.length == 1) {
+    if (array.length === 1) {
         return `${array[0]}`;
     }
-    if (array.length == 2) {
+    if (array.length === 2) {
         return `${array[0]} and ${array[1]}`;
     }
     return array.slice(0, -2).join(", ") + (array.slice(0, -2).length ? ", " : "") + array.slice(-2).join(", and ");
@@ -51,7 +51,7 @@ let displayTime = { hour: 14, minute: 15 };
 let dateFormat = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
 
 //A function that gets the current date and time in UTC
-function now() { return new Date(); };
+function now() { return new Date(); }
 
 /**
  * A function that returns whether the bot should be active right now
@@ -134,7 +134,7 @@ client.on("ready", () => {
             let currentWalkersMessage = "";
             if (walkerNames.length > 1) {
                 currentWalkersMessage = `So far, ${formatArrayToString(walkerNames)} have said they will be cool today. 😎`;
-            } else if (walkerNames.length == 1) {
+            } else if (walkerNames.length === 1) {
                 currentWalkersMessage = `${walkerNames[0]} is the only cool person so far.`;
             } else {
                 currentWalkersMessage = "None of the neighbors have said they will walk yet... 😢";
@@ -148,9 +148,9 @@ client.on("ready", () => {
             queryMessage.unpin();
             let walkers = reaction.users.array().filter(user => "tag" in user && user.tag in neighbors).map(walker => walker.tag);
             let finalMessage = "";
-            if (walkers.length == 0) {
+            if (walkers.length === 0) {
                 finalMessage = "Nobody walked... 😢";
-            } else if (walkers.length == 1) {
+            } else if (walkers.length === 1) {
                 finalMessage = `${neighbors[walkers[0]]} is the only lonely but cool walker.`;
             } else {
                 finalMessage = `${formatArrayToString(walkers.map(tag => neighbors[tag]))} are pretty cool. 😎`;
