@@ -75,15 +75,15 @@ if (!shouldBeActive()) {
     exit();
 }
 
-//Timer will ping application every 5 minutes until bot has finished its execution
+//Timer will ping application every 15 minutes until bot has finished its execution
 let herokuTimer = setInterval(() => {
     if (!shouldBeActive()) {
         clearInterval(herokuTimer);
-        exit();
+        setTimeout(exit, 5 * 60 * 1000); //Bot will wait 5 minutes before shutting down
     } else {
         request("https://stormy-walker.herokuapp.com");
     }
-}, 5 * 60 * 1000);
+}, 15 * 60 * 1000);
 
 //Logs the bot in
 client.login(process.env.DiscordKey);
