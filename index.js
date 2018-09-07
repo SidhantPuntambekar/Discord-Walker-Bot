@@ -86,12 +86,10 @@ let herokuTimer = setInterval(() => {
 }, 15 * 60 * 1000);
 
 //Waits for the bot to log in
-(async () => await new Promise(async (resolve) => {
+(async () => {
     await client.login(process.env.DiscordKey);
-    client.on("ready", () => {
-        resolve()
-    });
-}))();
+    await new Promise(resolve => client.on("ready", () => resolve()));
+})();
 
 //Gets the channel that the bot will send messages in
 let walkingChannel = client.channels.array().find(channel => channel.id === process.env.WalkingChannelID);
