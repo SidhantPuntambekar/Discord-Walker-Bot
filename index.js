@@ -119,8 +119,10 @@ async function getMessageToSend() {
 //Schedules the bot to read the weather and ask for walkers in the morning at the query time
 client.setTimeout(async () => {
 
-    //Sets the icon of the bot to an icon of the current weather
-    await client.user.setAvatar(`http://openweathermap.org/img/w/${(await getWeatherData()).weather[0].icon}.png`);
+    //Tries to set the icon of the bot to an icon of the current weather
+    try {
+        await client.user.setAvatar(`http://openweathermap.org/img/w/${(await getWeatherData()).weather[0].icon}.png`);
+    } catch (e) {}
     //Bot sends the initial message querying who will be walking and containing weather data
     let queryMessage = await walkingChannel.send(await getMessageToSend());
     await queryMessage.pin();
