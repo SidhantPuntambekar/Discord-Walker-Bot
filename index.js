@@ -85,21 +85,12 @@ let herokuTimer = setInterval(() => {
     }
 }, 15 * 60 * 1000);
 
-//Waits for the bot to log in
-(async () => {
-    await client.login(process.env.DiscordKey);
-    await new Promise(resolve => client.on("ready", () => resolve()));
-})();
-
-//Gets the channel that the bot will send messages in
-let walkingChannel = client.channels.array().find(channel => channel.id === process.env.WalkingChannelID);
-
 /**
  * A function to get the weather data
  * Returns a promise that resolves to the weather data
  */
 function getWeatherData() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         request(`https://api.openweathermap.org/data/2.5/weather?q=Boulder,us&appid=${process.env.OpenWeatherKey}`, (error, response, body) => {
             resolve(JSON.parse(body));
         });
@@ -116,6 +107,12 @@ async function getMessageToSend() {
 
 //Schedules the bot to read the weather and ask for walkers in the morning at the query time
 client.setTimeout(async () => {
+
+    //Waits for the bot to log in
+    await client.login(process.env.DiscordKey);
+
+    //Gets the channel that the bot will send messages in
+    let walkingChannel = client.channels.array().find(channel => channel.id === process.env.WalkingChannelID);
 
     //Tries to set the icon of the bot to an icon of the current weather
     try {
