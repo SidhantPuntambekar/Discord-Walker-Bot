@@ -5,18 +5,13 @@ require("dotenv").load();
 
 const Discord = require("discord.js");
 const express = require("express");
-const pg = require("pg");
 const request = require("request");
 const client = new Discord.Client();
 
 //Binds the app to the heroku port
 express().listen(process.env.PORT);
 
-//Initializes and connects the database client
-let databaseClient = new pg.Client({ connectionString: process.env.DATABASE_URL });
-(async () => await databaseClient.connect())();
-
-//A dictionary of discord tags to names for the neighbors that will be walking and have data collected on them
+//A dictionary of discord tags to names for the neighbors that will be walking
 let neighbors = {
     "Lord Strainer#0454": "Saurabh",
     "IIPerson#1723": "Elia",
@@ -66,7 +61,6 @@ function shouldBeActive() {
  */
 function exit() {
     client.destroy();
-    databaseClient.end();
     process.exit(0);
 }
 
@@ -138,7 +132,7 @@ client.setTimeout(async () => {
         await queryMessage.edit(`${await getMessageToSend()} For those who are walking, please react to this message with a ${affirmationEmoji}; other emojis or lack thereof are ignored.\n${currentWalkersMessage}`);
     }, 15 * 1000);
 
-    //At displayTime, bot puts walking information in database and stops updating the previous message
+    //At displayTime, bot updates message one final time
     client.setTimeout(async () => {
         client.clearInterval(queryMessageUpdater);
         await queryMessage.unpin();
@@ -152,10 +146,6 @@ client.setTimeout(async () => {
             finalMessage = `${formatArrayToString(walkers.map(tag => neighbors[tag]))} are pretty cool. 😎`;
         }
         await queryMessage.edit(`${await getMessageToSend()}\n${finalMessage}`);
-        walkers.forEach(async walker => {
-            let walkerId = (await databaseClient.query("SELECT id FROM neighbors WHERE discord_tag = $1;", [walker])).rows[0]["id"];
-            await databaseClient.query("INSERT INTO walking_dates(walker_id, walking_date) VALUES($1, CURRENT_DATE);", [walkerId]);
-        });
         exit();
     }, new Date(now().getFullYear(), now().getMonth(), now().getDate(), displayTime.hour, displayTime.minute, 0, 0) - now());
 
