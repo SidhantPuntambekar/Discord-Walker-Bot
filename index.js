@@ -16,7 +16,8 @@ let neighbors = {
     "Lord Strainer#0454": "Saurabh",
     "IIPerson#1723": "Elia",
     "Kxoe#8732": "Kadin",
-    "wussupnik#6607": "Nikaash"
+    "wussupnik#6607": "Nikaash",
+    "SiddyP#3956": "Sidhant"
 };
 
 /**
